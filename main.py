@@ -1,8 +1,4 @@
-from PyQt6.QtWidgets import QApplication
-import ui
+from ui import start_ui
 
 if __name__ == "__main__":
-    app = QApplication([])
-    window = AMMedDocsUI()
-    window.show()
-    app.exec()
+    start_ui()
