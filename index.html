@@ -134,6 +134,61 @@
         textarea, input {
             font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
         }
+
+        /* Estilos para el modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 50%;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .modal-actions {
+            margin-top: 20px;
+        }
+
+        .modal-actions button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .modal-actions button:hover {
+            background-color: #ddd;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -151,16 +206,16 @@
                 <div class="form-column">
                     <div class="form-row">
                         <label>Nombre:</label>
-                        <input type="text" placeholder="Ingrese nombre">
+                        <input type="text" id="nombre" placeholder="Ingrese nombre">
                         <label>Edad:</label>
-                        <input type="number" placeholder="Edad"> 
+                        <input type="number" id="edad" placeholder="Edad"> 
                         <label>Años</label>
                         <br>
                     </div>
 
                     <div class="form-row">
                         <label>Fecha:</label>
-                        <input type="date">
+                        <input type="date" id="fecha">
                         <br>
                     </div>
 
@@ -172,18 +227,18 @@
                     </div>
 
                     <label>Cuerpo del documento:</label><br>
-                    <textarea placeholder="Escriba aquí..."></textarea><br>
+                    <textarea id="cuerpo" placeholder="Escriba aquí..."></textarea><br>
 
                     <div class="checkbox-group">
                         <label>Firmado:</label>
-                        <input type="checkbox" id="firmado_si"><label for="firmado_si">Sí</label>
-                        <input type="checkbox" id="firmado_no"><label for="firmado_no">No</label>
+                        <input type="radio" id="firmado_si"><label for="firmado_si">Sí</label>
+                        <input type="radio" id="firmado_no"><label for="firmado_no">No</label>
                         <br>
                     </div>
 
                     <div class="form-row">
                         <label>Número de Teléfono:</label>
-                        <input type="text" placeholder="Ingrese número">
+                        <input type="text" id="telefono" placeholder="Ingrese número">
                         <br><br>
                     </div>
                     
@@ -205,6 +260,20 @@
 
             <button onclick="generateIMG()">Generar</button>
         </div>
+
+    </div>
+
+    <!-- Agrega el modal al final del body -->
+    <div id="previewModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>Previsualización del PDF</h2>
+            <iframe src="/assets/Hoja membretada.pdf" width="100%" height="400px"></iframe>
+            <div class="modal-actions">
+                <button onclick="sendWhatsApp()">Enviar por WhatsApp</button>
+                <button onclick="closeModal()">Cancelar</button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -224,7 +293,56 @@
         }
 
         function generatePDF() {
-            alert("Aquí se generará el PDF en el futuro.");
+            // Capturar valores del formulario
+            let datos = {
+                nombre: document.getElementById("nombre").value,
+                edad: document.getElementById("edad").value,
+                fecha: document.getElementById("fecha").value,
+                parrafo_inicial: document.getElementById("parrafo_si").checked,
+                cuerpo: document.getElementById("cuerpo").value,
+                firmado: document.getElementById("firmado_si").checked,
+                telefono: document.getElementById("telefono").value
+            };
+
+            // Validar campos requeridos
+            if (!datos.nombre || !datos.edad || !datos.fecha || !datos.cuerpo || !datos.telefono) {
+                alert("Por favor, complete todos los campos obligatorios.");
+                return;
+            }
+
+            // Llamar a la API de Python para generar el PDF
+            window.pywebview.api.generate_pdf(datos).then(response => {
+                // Mostrar el modal con la previsualización del PDF
+                openModal(response.pdf_url); // response.pdf_url debe ser la URL del PDF generado
+            });
+        }
+
+        function openModal(pdfUrl) {
+            // Mostrar el modal
+            const modal = document.getElementById("previewModal");
+            modal.style.display = "block";
+
+            // Establecer la URL del PDF en el iframe
+            const pdfPreview = document.getElementById("pdfPreview");
+            pdfPreview.src = pdfUrl;
+        }
+
+        function closeModal() {
+            // Ocultar el modal
+            const modal = document.getElementById("previewModal");
+            modal.style.display = "none";
+        }
+
+        function sendWhatsApp() {
+            // Obtener el número de teléfono del formulario
+            const telefono = document.getElementById("telefono").value;
+
+            // Generar el enlace de WhatsApp
+            //const mensaje = encodeURIComponent("Hola, aquí está el PDF generado.");
+            //const enlaceWhatsApp = `https://wa.me/${telefono}?text=${mensaje}`;
+
+            // Abrir el enlace de WhatsApp en una nueva ventana
+            //window.open(enlaceWhatsApp, "_blank");
         }
     </script>
 
